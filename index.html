@@ -1,0 +1,775 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quiz – Microsoft Defender for Cloud</title>
+  <style>
+    :root{
+      --bg:#ffffff;
+      --page:#f6f7fb;
+      --text:#0f172a;
+      --muted:#64748b;
+      --card:#ffffff;
+      --border:#e2e8f0;
+      --shadow:0 10px 30px rgba(2,6,23,.08);
+      --accent:#2563eb;
+      --accent-2:#1d4ed8;
+      --good:#16a34a;
+      --bad:#dc2626;
+      --focus: 0 0 0 4px rgba(37,99,235,.18);
+      --radius:16px;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color:var(--text);
+      background:linear-gradient(180deg, var(--page), #fff);
+      min-height:100vh;
+    }
+
+    .wrap{
+      max-width: 980px;
+      margin: 32px auto;
+      padding: 0 18px 40px;
+    }
+
+    header{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom:18px;
+    }
+
+    .title{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+
+    h1{
+      font-size: 22px;
+      margin:0;
+      letter-spacing:-.01em;
+    }
+
+    .sub{
+      margin:0;
+      color:var(--muted);
+      font-size: 14px;
+      line-height:1.4;
+    }
+
+    .progress{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+      gap:8px;
+      min-width: 180px;
+    }
+
+    .pill{
+      font-size: 13px;
+      color: var(--muted);
+      background: #fff;
+      border:1px solid var(--border);
+      border-radius:999px;
+      padding:6px 10px;
+    }
+
+    .bar{
+      width: 180px;
+      height: 8px;
+      background: #e8ecf6;
+      border-radius:999px;
+      overflow:hidden;
+      border:1px solid #dde3f4;
+    }
+
+    .bar > div{
+      height:100%;
+      width:0%;
+      background: linear-gradient(90deg, var(--accent), #60a5fa);
+      border-radius:999px;
+      transition: width .35s ease;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px;
+    }
+
+    .question{
+      display:flex;
+      gap:14px;
+      align-items:flex-start;
+      margin-bottom: 16px;
+    }
+
+    .qnum{
+      width:42px;
+      height:42px;
+      border-radius: 12px;
+      background:#eef2ff;
+      color:#3730a3;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:700;
+      flex: 0 0 auto;
+      border:1px solid #e0e7ff;
+    }
+
+    .qtext{
+      font-size: 18px;
+      line-height:1.35;
+      margin: 2px 0 0;
+      letter-spacing:-.01em;
+    }
+
+    .choices{
+      display:grid;
+      gap:12px;
+      margin-top: 12px;
+    }
+
+    .choice{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      padding: 14px 14px;
+      border:1px solid var(--border);
+      border-radius: 14px;
+      background: #fff;
+      cursor:pointer;
+      transition: transform .08s ease, border-color .12s ease, box-shadow .12s ease;
+      user-select:none;
+    }
+
+    .choice:hover{ transform: translateY(-1px); border-color:#cbd5e1; }
+
+    .choice input{ margin-top: 4px; }
+
+    .choice .label{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      width:100%;
+    }
+
+    .badge{
+      width: 28px;
+      height: 28px;
+      border-radius: 9px;
+      border:1px solid var(--border);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:700;
+      color:#0f172a;
+      background:#f8fafc;
+      flex:0 0 auto;
+    }
+
+    .choice.selected{ border-color: rgba(37,99,235,.55); box-shadow: var(--focus); }
+
+    .choice.correct{ border-color: rgba(22,163,74,.55); box-shadow: 0 0 0 4px rgba(22,163,74,.15); }
+    .choice.wrong{ border-color: rgba(220,38,38,.55); box-shadow: 0 0 0 4px rgba(220,38,38,.14); }
+
+    .controls{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .left-controls{ display:flex; gap:10px; align-items:center; }
+
+    button{
+      appearance:none;
+      border:1px solid var(--border);
+      background:#fff;
+      color:var(--text);
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-weight: 650;
+      cursor:pointer;
+      transition: transform .08s ease, border-color .12s ease, box-shadow .12s ease, background .12s ease;
+    }
+
+    button:hover{ transform: translateY(-1px); border-color:#cbd5e1; }
+    button:focus{ outline:none; box-shadow: var(--focus); }
+    button:disabled{ opacity:.55; cursor:not-allowed; transform:none; }
+
+    .primary{
+      background: var(--accent);
+      border-color: var(--accent);
+      color:#fff;
+    }
+
+    .primary:hover{ background: var(--accent-2); border-color: var(--accent-2); }
+
+    details{
+      margin-top: 12px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 10px 12px;
+      background:#fff;
+    }
+
+    details summary{
+      cursor:pointer;
+      color: var(--muted);
+      font-weight: 650;
+      list-style:none;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    details summary::-webkit-details-marker{ display:none; }
+
+    .hint{
+      margin: 10px 0 0;
+      color: var(--muted);
+      line-height:1.45;
+      font-size: 14px;
+    }
+
+    .feedback{
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #f8fafc;
+      color: var(--text);
+      display:none;
+    }
+
+    .feedback.good{ border-color: rgba(22,163,74,.35); background: rgba(22,163,74,.06); }
+    .feedback.bad{ border-color: rgba(220,38,38,.35); background: rgba(220,38,38,.06); }
+
+    .feedback strong{ display:inline-block; margin-right: 6px; }
+
+    .results{
+      display:none;
+      margin-top: 16px;
+      border-top: 1px dashed var(--border);
+      padding-top: 18px;
+    }
+
+    .score{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom: 12px;
+    }
+
+    .score h2{ margin:0; font-size: 18px; }
+    .score p{ margin:0; color:var(--muted); }
+
+    table{
+      width:100%;
+      border-collapse: collapse;
+      overflow:hidden;
+      border-radius: 14px;
+      border:1px solid var(--border);
+      background:#fff;
+    }
+
+    th, td{
+      text-align:left;
+      padding: 12px 12px;
+      border-bottom: 1px solid var(--border);
+      vertical-align:top;
+      font-size: 14px;
+    }
+
+    th{ background:#f8fafc; color: #334155; font-weight: 700; }
+    tr:last-child td{ border-bottom:none; }
+
+    .tag{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-weight: 700;
+      font-size: 12px;
+      border:1px solid var(--border);
+      background:#fff;
+    }
+
+    .tag.ok{ border-color: rgba(22,163,74,.35); background: rgba(22,163,74,.06); color: #166534; }
+    .tag.no{ border-color: rgba(220,38,38,.35); background: rgba(220,38,38,.06); color: #991b1b; }
+
+    @media (max-width: 640px){
+      .progress{ align-items:flex-start; min-width:auto; }
+      .bar{ width: 100%; }
+      header{ flex-direction:column; }
+      .question{ flex-direction:column; }
+      .qnum{ width:40px; height:40px; }
+      .controls{ flex-direction:column; align-items:stretch; }
+      .left-controls{ justify-content:space-between; }
+      button{ width:100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="title">
+        <h1>Quiz – Microsoft Defender for Cloud</h1>
+        <p class="sub">10 meerkeuzevragen • Onmiddellijke feedback zodra je een antwoord kiest • Eindrapport met antwoordsleutel</p>
+      </div>
+      <div class="progress">
+        <div class="pill" id="pill">1 / 10</div>
+        <div class="bar" aria-hidden="true"><div id="barFill"></div></div>
+      </div>
+    </header>
+
+    <main class="card" aria-live="polite">
+      <div class="question">
+        <div class="qnum" id="qnum">1</div>
+        <div>
+          <div class="qtext" id="qtext"></div>
+        </div>
+      </div>
+
+      <div class="choices" id="choices"></div>
+
+      <div class="feedback" id="feedback"></div>
+
+      <details id="hintBox">
+        <summary>
+          <span>Hint</span>
+          <span aria-hidden="true">▾</span>
+        </summary>
+        <p class="hint" id="hintText"></p>
+      </details>
+
+      <div class="controls">
+        <div class="left-controls">
+          <button id="btnPrev" type="button">Vorige</button>
+          <button id="btnReset" type="button">Herstart</button>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
+<button id="btnNext" class="primary" type="button">Volgende</button>
+        </div>
+      </div>
+
+      <section class="results" id="results">
+        <div class="score">
+          <div>
+            <h2>Resultaat</h2>
+            <p id="scoreLine"></p>
+          </div>
+          <button id="btnReview" type="button">Bekijk antwoordsleutel</button>
+        </div>
+
+        <div id="reviewWrap" style="display:none;">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:80px;">Vraag</th>
+                <th style="width:110px;">Jouw antwoord</th>
+                <th style="width:110px;">Correct</th>
+                <th>Toelichting</th>
+              </tr>
+            </thead>
+            <tbody id="reviewBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const quiz = [
+      {
+        q: "Wat is het primaire doel van Cloud Security Posture Management (CSPM)?",
+        options: {
+          A: "Het detecteren van actieve brute force-aanvallen.",
+          B: "Het waarborgen van de juiste configuratie en 'hygiëne' van cloudresources.",
+          C: "Het opslaan van back-ups van virtuele machines.",
+          D: "Het beheren van de maandelijkse facturatie van Azure-diensten."
+        },
+        correct: "B",
+        hint: "CSPM focust op preventie: policies, configuraties, compliance en misconfiguraties. Actieve aanvalsdetectie hoort typisch bij workload protection (CWP).",
+        explain: "CSPM gaat over preventie en configuratie ('hygiëne'), niet over actieve aanvalsdetectie (dat is CWP)."
+      },
+      {
+        q: "Welke technologie is essentieel om on-premise servers te beheren en te beveiligen via het Defender for Cloud-portaal?",
+        options: {
+          A: "Microsoft Sentinel.",
+          B: "Azure Logic Apps.",
+          C: "Azure Arc.",
+          D: "Power Platform Connectors."
+        },
+        correct: "C",
+        hint: "De brug tussen resources buiten Azure en het Azure-portaal is een 'control plane'-laag die servers registreert als Azure-resources.",
+        explain: "Azure Arc maakt het mogelijk om resources buiten Azure te zien en te beheren in het portaal."
+      },
+      {
+        q: "Wat gebeurt er als Defender for Cloud wordt geactiveerd voor een Azure-abonnement met 100 VM's?",
+        options: {
+          A: "U kunt handmatig selecteren welke 10 VM's u wilt beveiligen.",
+          B: "Alleen de meest kritieke 50 VM's worden automatisch beveiligd.",
+          C: "Alle 100 VM's binnen dat abonnement worden gedekt en in rekening gebracht.",
+          D: "De eerste 10 VM's zijn gratis, de rest moet handmatig worden toegevoegd."
+        },
+        correct: "C",
+        hint: "Denk aan het niveau waarop je Defender inschakelt: is dat per machine of per abonnement?",
+        explain: "Defender wordt geactiveerd op abonnementniveau; u kunt binnen een abonnement niet kiezen per machine."
+      },
+      {
+        q: "Welke functie van Defender for Servers P2 helpt bij het beperken van het risico dat een admin-wachtwoord wordt misbruikt door beheerpoorten standaard gesloten te houden?",
+        options: {
+          A: "File Integrity Monitoring.",
+          B: "Adaptive Network Hardening.",
+          C: "Just-in-Time (JIT) VM Access.",
+          D: "Adaptive Application Control."
+        },
+        correct: "C",
+        hint: "Zoek naar de functie die 'zero standing access' mogelijk maakt: poorten enkel tijdelijk openen wanneer nodig.",
+        explain: "JIT VM Access zorgt voor 'zero standing network access' door poorten alleen op verzoek te openen."
+      },
+      {
+        q: "Hoe draagt 'Alert Correlatie' bij aan het werk van een security-analist?",
+        options: {
+          A: "Het verwijdert automatisch alle meldingen die niet belangrijk zijn.",
+          B: "Het koppelt verschillende signalen (zoals een e-mailaanval en een servercompromis) aan elkaar tot één incident.",
+          C: "Het vertaalt alle meldingen automatisch van het Engels naar het Nederlands.",
+          D: "Het verhoogt de Secure Score door automatisch poorten te sluiten."
+        },
+        correct: "B",
+        hint: "Correlatie = verbanden leggen. Denk aan het groeperen van losse alerts tot één verhaal/incident.",
+        explain: "Correlatie gebruikt machine learning om losse signalen tot één begrijpelijk incident te verbinden."
+      },
+      {
+        q: "Wat is het voordeel van 'Adaptive Application Control'?",
+        options: {
+          A: "Het versnelt de prestaties van goedgekeurde applicaties.",
+          B: "Het zorgt ervoor dat alleen vooraf goedgekeurde software kan draaien op een server.",
+          C: "Het updatet automatisch alle software naar de nieuwste versie.",
+          D: "Het detecteert phishing-e-mails voordat ze de inbox bereiken."
+        },
+        correct: "B",
+        hint: "Denk aan whitelisting: wat mag wél draaien, en alles anders wordt geblokkeerd.",
+        explain: "Dit is een whitelisting-methode: alleen vertrouwde software mag worden uitgevoerd."
+      },
+      {
+        q: "Welk raamwerk gebruikt Defender for Cloud om de tactieken en technieken van aanvallers te beschrijven in beveiligingsmeldingen?",
+        options: {
+          A: "ISO 27001.",
+          B: "NIST Cloud Framework.",
+          C: "MITRE ATT&CK.",
+          D: "PCI-DSS."
+        },
+        correct: "C",
+        hint: "Dit is de 'gemeenschappelijke taal' voor aanvalstechnieken en tactieken, vaak gebruikt in threat intel.",
+        explain: "MITRE ATT&CK is de wereldwijde standaardtaal voor het beschrijven van aanvalsmethoden."
+      },
+      {
+        q: "Wat is inbegrepen in Defender for Servers Plan 2 met betrekking tot data-opslag?",
+        options: {
+          A: "Onbeperkte opslag voor alle applicatielogs.",
+          B: "Tot 500 MB per dag per server voor beveiligingsdata in Log Analytics.",
+          C: "Gratis back-up van de volledige virtuele machine.",
+          D: "Geen gratis opslag; alle data wordt apart gefactureerd vanaf de eerste MB."
+        },
+        correct: "B",
+        hint: "Zoek naar een 'fair use' of inbegrepen ingestie-limiet per server per dag.",
+        explain: "P2 biedt 500 MB gratis data-ingestie voor beveiligingslogs per server per dag."
+      },
+      {
+        q: "Waarom wordt de onderwijssector specifiek genoemd als een belangrijk doelwit voor cyberaanvallen?",
+        options: {
+          A: "Omdat scholen over het algemeen de hoogste budgetten voor IT hebben.",
+          B: "Vanwege de grote populatie studenten en een gebrek aan cyberbewustzijn bij eindgebruikers.",
+          C: "Omdat scholen geen gebruik maken van firewalls.",
+          D: "Omdat onderwijsinstellingen verplicht zijn al hun data openbaar te maken."
+        },
+        correct: "B",
+        hint: "Denk aan 'aanvalsoppervlak': veel accounts + veel eindgebruikers met wisselend bewustzijn.",
+        explain: "De tekst benoemt het grote aanvalsoppervlak door studenten en een tekort aan cyberbewustzijn."
+      },
+      {
+        q: "Wat is de functie van de 'Quick Fix'-knop in het Defender-portaal?",
+        options: {
+          A: "Het herstelt onmiddellijk een gecrashte server.",
+          B: "Het biedt een geautomatiseerde manier om een specifieke misconfiguratie of aanbeveling op te lossen.",
+          C: "Het verwijdert alle malware van een besmette pc.",
+          D: "Het verlaagt de kosten van het Azure-abonnement met één klik."
+        },
+        correct: "B",
+        hint: "Quick Fix = snel een aanbevolen remediatie uitvoeren, vaak met een begeleide of geautomatiseerde actie.",
+        explain: "Quick Fix automatiseert de aanbevolen beveiligingsstappen voor veelvoorkomende taken."
+      }
+    ];
+
+    // State
+    let idx = 0;
+    const userAnswers = Array(quiz.length).fill(null);
+    const checked = Array(quiz.length).fill(false);
+
+    // Elements
+    const qnum = document.getElementById('qnum');
+    const qtext = document.getElementById('qtext');
+    const choices = document.getElementById('choices');
+    const pill = document.getElementById('pill');
+    const barFill = document.getElementById('barFill');
+    const hintText = document.getElementById('hintText');
+    const hintBox = document.getElementById('hintBox');
+    const feedback = document.getElementById('feedback');
+
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const btnReset = document.getElementById('btnReset');
+
+    const results = document.getElementById('results');
+    const scoreLine = document.getElementById('scoreLine');
+    const btnReview = document.getElementById('btnReview');
+    const reviewWrap = document.getElementById('reviewWrap');
+    const reviewBody = document.getElementById('reviewBody');
+
+    function setProgress(){
+      pill.textContent = `${idx + 1} / ${quiz.length}`;
+      const pct = ((idx) / (quiz.length - 1)) * 100;
+      barFill.style.width = `${Math.max(0, Math.min(100, pct))}%`;
+    }
+
+    function render(){
+      const item = quiz[idx];
+
+      // Hide results panel during quiz navigation
+      results.style.display = 'none';
+      reviewWrap.style.display = 'none';
+      btnReview.textContent = 'Bekijk antwoordsleutel';
+
+      // Reset hint state
+      hintBox.open = false;
+
+      qnum.textContent = idx + 1;
+      qtext.textContent = item.q;
+      hintText.textContent = item.hint;
+
+      // Feedback
+      feedback.style.display = checked[idx] ? 'block' : 'none';
+      if(checked[idx]){
+        const isCorrect = userAnswers[idx] === item.correct;
+        feedback.className = `feedback ${isCorrect ? 'good' : 'bad'}`;
+        feedback.innerHTML = isCorrect
+          ? `<strong>Correct.</strong> ${item.explain}`
+          : `<strong>Niet helemaal.</strong> Correct antwoord: <b>${item.correct}</b>. ${item.explain}`;
+      } else {
+        feedback.className = 'feedback';
+        feedback.innerHTML = '';
+      }
+
+      // Choices
+      choices.innerHTML = '';
+      for(const key of Object.keys(item.options)){
+        const text = item.options[key];
+        const selected = (userAnswers[idx] === key);
+
+        const row = document.createElement('label');
+        row.className = 'choice' + (selected ? ' selected' : '');
+        row.setAttribute('data-key', key);
+
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = 'choice';
+        input.value = key;
+        input.checked = selected;
+        input.ariaLabel = `Antwoord ${key}`;
+
+        const labelWrap = document.createElement('div');
+        labelWrap.className = 'label';
+
+        const badge = document.createElement('div');
+        badge.className = 'badge';
+        badge.textContent = key;
+
+        const p = document.createElement('div');
+        p.style.lineHeight = '1.35';
+        p.innerHTML = text;
+
+        labelWrap.appendChild(badge);
+        labelWrap.appendChild(p);
+
+        row.appendChild(input);
+        row.appendChild(labelWrap);
+
+        // If checked, show correct/incorrect styling
+        if(checked[idx]){
+          const isCorrectChoice = key === item.correct;
+          const isUserChoice = key === userAnswers[idx];
+          if(isCorrectChoice) row.classList.add('correct');
+          if(isUserChoice && !isCorrectChoice) row.classList.add('wrong');
+        }
+
+        row.addEventListener('click', () => {
+          // Immediate feedback on selection
+          if(checked[idx]) return;
+          userAnswers[idx] = key;
+          checked[idx] = true;
+          render();
+
+          // Auto-open hint if incorrect (subtle coaching)
+          const isCorrect = userAnswers[idx] === quiz[idx].correct;
+          if(!isCorrect) hintBox.open = true;
+
+          // If all questions are answered, show the results panel
+          showResultsIfDone();
+        });
+
+        choices.appendChild(row);
+      }
+
+      // Buttons
+      btnPrev.disabled = idx === 0;
+      btnNext.textContent = (idx === quiz.length - 1) ? 'Afronden' : 'Volgende';
+
+      setProgress();
+    }
+
+    function checkCurrent(){
+      if(userAnswers[idx] === null) return;
+      checked[idx] = true;
+      render();
+
+      // Auto-open hint if incorrect (subtle coaching)
+      const isCorrect = userAnswers[idx] === quiz[idx].correct;
+      if(!isCorrect) hintBox.open = true;
+
+      // If this is last question and checked, show results callout
+      if(idx === quiz.length - 1){
+        showResultsIfDone();
+      }
+    }
+
+    function allChecked(){
+      return checked.every(Boolean);
+    }
+
+    function computeScore(){
+      let score = 0;
+      for(let i=0;i<quiz.length;i++){
+        if(userAnswers[i] && userAnswers[i] === quiz[i].correct) score++;
+      }
+      return score;
+    }
+
+    function showResultsIfDone(){
+      if(!allChecked()) return;
+
+      const score = computeScore();
+      const pct = Math.round((score / quiz.length) * 100);
+      const msg = pct >= 80
+        ? 'Sterk! Je zit goed op koers.'
+        : pct >= 60
+          ? 'Goed bezig. Nog wat finetunen en je bent er.'
+          : 'Oef. Herbekijk zeker de toelichtingen en probeer opnieuw.';
+
+      results.style.display = 'block';
+      scoreLine.textContent = `Score: ${score} / ${quiz.length} (${pct}%). ${msg}`;
+    }
+
+    function buildReview(){
+      reviewBody.innerHTML = '';
+      for(let i=0;i<quiz.length;i++){
+        const tr = document.createElement('tr');
+
+        const tdQ = document.createElement('td');
+        tdQ.textContent = String(i+1);
+
+        const tdY = document.createElement('td');
+        tdY.textContent = userAnswers[i] ?? '—';
+
+        const tdC = document.createElement('td');
+        tdC.textContent = quiz[i].correct;
+
+        const tdE = document.createElement('td');
+        const ok = userAnswers[i] === quiz[i].correct;
+        tdE.innerHTML = `${ok ? '<span class="tag ok">✓ Correct</span>' : '<span class="tag no">✕ Fout</span>'} <div style="margin-top:8px; color:#334155;">${quiz[i].explain}</div>`;
+
+        tr.appendChild(tdQ);
+        tr.appendChild(tdY);
+        tr.appendChild(tdC);
+        tr.appendChild(tdE);
+        reviewBody.appendChild(tr);
+      }
+    }
+
+    // Navigation
+    btnPrev.addEventListener('click', () => {
+      if(idx > 0) idx--;
+      render();
+    });
+
+    btnNext.addEventListener('click', () => {
+      if(idx < quiz.length - 1){
+        idx++;
+        render();
+        return;
+      }
+
+      // Last question: if not checked yet, check it; else show results if done
+      if(!checked[idx]){
+        checkCurrent();
+      }
+      showResultsIfDone();
+
+      // If not all checked, gently guide
+      if(!allChecked()){
+        results.style.display = 'block';
+        const done = checked.filter(Boolean).length;
+        scoreLine.textContent = `Je hebt ${done} / ${quiz.length} vragen gecontroleerd. Controleer ook de rest om je eindscore te zien.`;
+      }
+    });
+
+    btnReset.addEventListener('click', () => {
+      idx = 0;
+      for(let i=0;i<quiz.length;i++){
+        userAnswers[i] = null;
+        checked[i] = false;
+      }
+      render();
+    });
+
+    btnReview.addEventListener('click', () => {
+      if(reviewWrap.style.display === 'none'){
+        buildReview();
+        reviewWrap.style.display = 'block';
+        btnReview.textContent = 'Verberg antwoordsleutel';
+      } else {
+        reviewWrap.style.display = 'none';
+        btnReview.textContent = 'Bekijk antwoordsleutel';
+      }
+    });
+
+    // Keyboard: Enter to check when possible
+    document.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter'){
+        if(!checked[idx] && userAnswers[idx] !== null){
+          checkCurrent();
+        }
+      }
+    });
+
+    // Initial render
+    render();
+  </script>
+</body>
+</html>
